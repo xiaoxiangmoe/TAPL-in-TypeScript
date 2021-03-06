@@ -1,0 +1,6 @@
+true;
+if false then true else false;
+if false then true else if (is_zero 0) then (is_zero (succ 0)) else false;
+0;
+(succ (pred 0));
+(is_zero (pred (succ (succ 0))));

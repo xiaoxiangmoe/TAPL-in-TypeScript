@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`arith 1`] = `
+"true;
+false;
+false;
+0;
+(succ 0);
+false;
+"
+`;

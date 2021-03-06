@@ -1,0 +1,3 @@
+ℬ x: Bool;
+ℬ foo: (Bool → Bool);
+((λ not: (Bool → Bool). if (not (not (not false))) then foo else x)  (λ x: Bool. if x then false else true));

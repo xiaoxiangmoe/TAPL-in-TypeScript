@@ -1,0 +1,5 @@
+ℬ x: Bool;
+x;
+ℬ foo: (Bool → Bool);
+ℬ bar: (Bool → Bool);
+((λ not: (Bool → Bool). if (not (not (not false))) then foo else bar) (λ x: Bool. if x then false else true));

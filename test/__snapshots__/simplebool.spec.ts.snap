@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`simplebool has type error 1`] = `"arms of conditional have different types  at filename:3.25"`;
+
+exports[`simplebool ok 1`] = `
+"ℬ x: Bool;
+x: Bool;
+ℬ foo: (Bool → Bool);
+ℬ bar: (Bool → Bool);
+foo: (Bool → Bool);
+"
+`;

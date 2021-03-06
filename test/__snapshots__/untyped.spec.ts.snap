@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`untyped 1`] = `
+"ℬ x;
+x;
+ℬ not;
+((λ y. (not y)) x);
+(λ x. x);
+(λ y. (x y));
+(λ y. (λ y. (x y)));
+"
+`;
