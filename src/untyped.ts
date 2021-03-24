@@ -126,35 +126,73 @@ const name2index = (info: info, context: context, name: string): number =>
 // Shifting
 
 /**
+ * map term
+ *
+ * @param on_var on_var
+ * @param c above cutoff c
+ * @param t term t
+ */
+function term_map(
+  on_var: (data: {
+    /**
+     * file info
+     */
+    readonly info: info;
+    /**
+     * cutoff
+     */
+    readonly c: number;
+    /**
+     * de_bruijn_index
+     */
+    readonly de_bruijn_index: number;
+  }) => term,
+  c: number,
+  t: term
+): term {
+  function walk(c: number, t: term): term {
+    switch (t.kind) {
+      case 'variable':
+        return on_var({
+          info: t.info,
+          c,
+          de_bruijn_index: t.de_bruijn_index,
+        });
+      case 'abstraction':
+        return {
+          ...t,
+          body: walk(c + 1, t.body),
+        };
+      case 'application':
+        return {
+          ...t,
+          func: walk(c, t.func),
+          argument: walk(c, t.argument),
+        };
+      default:
+        return exhaustiveCheck(t);
+    }
+  }
+  return walk(c, t);
+}
+
+/**
  * The d-place shift of a term t above cutoff c
  *
  * @param d d-place shift
  * @param c above cutoff c
  * @param t term t
  */
-function termShiftAbove(d: number, c: number, t: term): term {
-  switch (t.kind) {
-    case 'variable':
-      const k = t.de_bruijn_index;
-      return {
-        ...t,
-        de_bruijn_index: k < c ? k : k + d,
-      };
-    case 'abstraction':
-      return {
-        ...t,
-        body: termShiftAbove(d, c + 1, t.body),
-      };
-    case 'application':
-      return {
-        ...t,
-        func: termShiftAbove(d, c, t.func),
-        argument: termShiftAbove(d, c, t.argument),
-      };
-    default:
-      return exhaustiveCheck(t);
-  }
-}
+const termShiftAbove = (d: number, c: number, t: term) =>
+  term_map(
+    ({ info, c, de_bruijn_index: k }) => ({
+      kind: 'variable',
+      info,
+      de_bruijn_index: k < c ? k : k + d,
+    }),
+    c,
+    t
+  );
 
 /**
  * The d-place shift of a term t above cutoff 0
@@ -162,36 +200,24 @@ function termShiftAbove(d: number, c: number, t: term): term {
  * @param d d-place shift
  * @param t term t
  */
-export const termShift = (d: number, t: term) => termShiftAbove(d, 0, t);
+const termShift = (d: number, t: term) => termShiftAbove(d, 0, t);
 
 /**
  * [j ↦ s] t
  */
-function termSubst(j: number, s: term, t: term): term {
-  switch (t.kind) {
-    case 'variable':
-      const k = t.de_bruijn_index;
-      return k === j
-        ? s
+const termSubst = (j: number, s: term, t: term) =>
+  term_map(
+    ({ info, c, de_bruijn_index: k }) =>
+      k === j + c
+        ? termShift(c, s)
         : {
-            ...t,
+            kind: 'variable',
+            info,
             de_bruijn_index: k,
-          };
-    case 'abstraction':
-      return {
-        ...t,
-        body: termSubst(j + 1, termShift(1, s), t.body),
-      };
-    case 'application':
-      return {
-        ...t,
-        func: termSubst(j, s, t.func),
-        argument: termSubst(j, s, t.argument),
-      };
-    default:
-      return exhaustiveCheck(t);
-  }
-}
+          },
+    0,
+    t
+  );
 
 /**
  * ((λ. t) s)
